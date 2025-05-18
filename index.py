@@ -1,10 +1,21 @@
-from flask import Flask, request, jsonify
-import requests
+from flask import Flask, request, abort
+from linebot import LineBotApi, WebhookHandler
+from linebot.exceptions import InvalidSignatureError
+from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from bs4 import BeautifulSoup
+import requests
+import os
 
 app = Flask(__name__)
 
-# 動畫爬蟲函式
+# 請替換成你自己的 LINE Token & Secret
+LINE_CHANNEL_ACCESS_TOKEN = "你的 Access Token"
+LINE_CHANNEL_SECRET = "你的 Channel Secret"
+
+line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
+handler = WebhookHandler(LINE_CHANNEL_SECRET)
+
+# 動畫爬蟲函數
 def get_latest_anime():
     url = "https://ani.gamer.com.tw/"
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -20,18 +31,34 @@ def get_latest_anime():
             info += f"📌 {title}\n🔗 {link}\n\n"
     return info.strip()
 
-# 接收 Dialogflow 的 webhook
-@app.route("/webhook", methods=["POST"])
-def webhook():
-    req = request.get_json()
-    intent_name = req["queryResult"]["intent"]["displayName"]
+# webhook 路由（LINE 會來這裡打）
+@app.route("/line_webhook", methods=["POST"])
+def callback():
+    signature = request.headers["X-Line-Signature"]
+    body = request.get_data(as_text=True)
 
-    if intent_name == "查詢最新動畫":
-        reply_text = get_latest_anime()
+    try:
+        handler.handle(body, signature)
+    except InvalidSignatureError:
+        abort(400)
+
+    return "OK"
+
+# 處理文字訊息事件
+@handler.add(MessageEvent, message=TextMessage)
+def handle_message(event):
+    user_msg = event.message.text.strip()
+
+    # 如果使用者問動畫，就回覆最新動畫
+    if "動畫" in user_msg:
+        reply = get_latest_anime()
     else:
-        reply_text = "這個意圖還沒設定喔！"
+        reply = f"你說的是：{user_msg}"
 
-    return jsonify({"fulfillmentText": reply_text})
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(text=reply)
+    )
 
 if __name__ == "__main__":
-    app.run(port=5000)
+    app.run()
