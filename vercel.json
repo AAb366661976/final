@@ -1,9 +1,43 @@
 {
-  "version": 2,
-  "builds": [
-    { "src": "api/index.py", "use": "@vercel/python" }
+  "name": "projects/YOUR_PROJECT_ID/agent/intents/查詢活動",
+  "displayName": "查詢活動",
+  "webhookState": "WEBHOOK_STATE_ENABLED",
+  "trainingPhrases": [
+    {
+      "parts": [{ "text": "台北有什麼展覽" }]
+    },
+    {
+      "parts": [{ "text": "高雄有親子活動嗎" }]
+    },
+    {
+      "parts": [{ "text": "我要找新竹的音樂活動" }]
+    },
+    {
+      "parts": [{ "text": "桃園最近有沒有市集" }]
+    },
+    {
+      "parts": [{ "text": "台中有什麼好玩的活動" }]
+    },
+    {
+      "parts": [{ "text": "我想參加台南的跑步比賽" }]
+    },
+    {
+      "parts": [{ "text": "花蓮旅遊活動有哪些" }]
+    }
   ],
-  "routes": [
-    { "src": "/.*", "dest": "api/index.py" }
-  ]
+  "parameters": [
+    {
+      "displayName": "region",
+      "entityTypeDisplayName": "@sys.location",
+      "mandatory": true,
+      "prompts": ["請問你要查哪個地區的活動？"]
+    },
+    {
+      "displayName": "keyword",
+      "entityTypeDisplayName": "@sys.any",
+      "mandatory": true,
+      "prompts": ["請問你想查什麼類型的活動？"]
+    }
+  ],
+  "priority": 500000
 }
