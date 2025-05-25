@@ -38,7 +38,7 @@ def handle_message(event):
 def dialogflow_webhook():
     req = request.get_json()
     params = req.get("queryResult", {}).get("parameters", {})
-    # 這裡要根據你 Dialogflow 參數名做調整
+    # 根據 Dialogflow 裡面的參數名稱調整
     region = params.get("region") or params.get("geo-city") or "台北"
     keyword = params.get("keyword") or params.get("any") or ""
     results = crawl(region.strip(), keyword.strip())
@@ -65,5 +65,5 @@ def crawl(region, keyword):
             continue
     return results
 
-def handler(request, response):  # Vercel 入口
+def handler(request, response):  # Vercel Serverless 入口
     return app(request, response)
