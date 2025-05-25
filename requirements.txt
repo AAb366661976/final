@@ -1,4 +1,7 @@
-flask
-requests
+Flask
+line-bot-sdk
 beautifulsoup4
-gunicorn
+requests
+selenium
+webdriver-manager
+python-dotenv
